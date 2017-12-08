@@ -25,7 +25,7 @@ class DoubanHTItem(scrapy.Item): #帖子内容和回复分两个表，用HT_id�
     HT_href = scrapy.Field() #话题地址
     HTtime = scrapy.Field() #话题发布时间
     sign = scrapy.Field() #用于做pipeline的分割，避免item重复
-    HT_Content = scrapy.Field() #话题内容
+    Content = scrapy.Field() #话题内容
     Rname = scrapy.Field() #回复用户
     Rtime = scrapy.Field() #回复时间
     Rcontent = scrapy.Field() #回复内容
@@ -42,9 +42,6 @@ class DoubanJPItem(scrapy.Item):
     JPliked = scrapy.Field() #剧评点赞
     JPdisliked = scrapy.Field() #剧评踩
     reply = scrapy.Field() #剧评回复数
-    Rname = scrapy.Field()  # 回复用户
-    Rtime = scrapy.Field()  # 回复时间
-    Rcontent = scrapy.Field()  # 回复内容
 
 
 

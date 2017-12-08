@@ -29,7 +29,7 @@ class Douban_DP(RedisSpider):
                 except:
                     item['DPtime'] = ''
                 try:
-                    item['Liked'] = div.xpath('div[@class="comment"]/h3/span[@class="comment-vote"]/span[@class="votes"]/text()').extract()[0]
+                    item['Liked'] = str(div.xpath('div[@class="comment"]/h3/span[@class="comment-vote"]/span[@class="votes"]/text()').extract()[0])
                 except:
                     item['Liked'] = ''
                 try:

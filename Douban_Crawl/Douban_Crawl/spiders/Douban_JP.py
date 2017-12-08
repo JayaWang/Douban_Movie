@@ -12,14 +12,14 @@ class Douban_JP(RedisSpider):
 
     def parse(self, response):
         selector = Selector(response)
-        divs = selector.xpath('//div[@class="article"]/div[@class="review-list  "]/div[@xmlns:v and @data-cid]')
+        divs = selector.xpath('//div[@class="article"]/div[@class="review-list  "]/div[@data-cid]')
         for div in divs:
             try:
-                author = div.xpath('div[@id]/header[@class="main-hd"]/a[@class="name"/text()]').extract()[0]
+                author = div.xpath('div[@id]/header[@class="main-hd"]/a[@class="name"]/text()').extract()[0]
             except:
                 author = ''
             try:
-                JPstar = div.xpath('div[@id]/header[@class="main-hd"]/span[@property="v:rating"]/text()').extract()[0]
+                JPstar = div.xpath('div[@id]/header[@class="main-hd"]/span[@property="v:rating"]/@title').extract()[0]
             except:
                 JPstar = ''
             try:
@@ -65,22 +65,21 @@ class Douban_JP(RedisSpider):
             p = selector.xpath('//div[@id="link-report"]/div[@class="review-content clearfix"]/p')
             content = ''
             for i in p:
-                content += i.xpath('/text()').extract()[0]
+                content += i.xpath('text()').extract()[0]
         except Exception as e:
             print '组合content错误' + str(e)
-
         try:
             item = DoubanJPItem()
-            item['JP_id'] = response.meta['JP_id']
+            item['JP_id'] = str(response.meta['JP_id'])
             item['title'] = response.meta['title']
             item['author'] = response.meta['author']
             item['JPtime'] = response.meta['JPtime']
             item['JPstar'] = response.meta['JPstar']
             item['href'] = response.meta['href']
             item['Content'] = content
-            item['JPliked'] = response.meta['JPliked']
-            item['JPdisliked'] = response.meta['JPdisliked']
-            item['reply'] = response.meta['reply']
+            item['JPliked'] = str(response.meta['JPliked'])
+            item['JPdisliked'] = str(response.meta['JPdisliked'])
+            item['reply'] = str(response.meta['reply'])
             yield item
         except Exception as e:
             print 'item赋值错误' + str(e)

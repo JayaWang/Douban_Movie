@@ -12,14 +12,29 @@ class Douban_HT(RedisSpider):
 
     def parse(self, response):
         selector = Selector(response)
-        divs = selector.xpath('/table[@id="posts-table"]/tbody/tr[@class and @data-id]')
+        divs = selector.xpath('//div[@class="discussion-posts"]/table[@id="posts-table"]/tr[@class and @data-id]')
         for div in divs:
             try:
-                HT_id = div.xpath('@data-id').extract()[0]
-                title = div.xpath('td[1]/a/text()').extract()[0]
-                author = div.xpath('td[2]/a/text()').extract()[0]
-                HT_href = div.xpath('td[1]/a/@href').extract()[0]
-                reply = div.xpath('td[3]/text()').extract()[0]
+                try:
+                    HT_id = div.xpath('@data-id').extract()[0]
+                except:
+                    HT_id = ''
+                try:
+                    title = div.xpath('td[1]/a/text()').extract()[0]
+                except:
+                    title = ''
+                try:
+                    author = div.xpath('td[2]/a/text()').extract()[0]
+                except:
+                    author = ''
+                try:
+                    HT_href = div.xpath('td[1]/a/@href').extract()[0]
+                except:
+                    HT_href = ''
+                try:
+                    reply = div.xpath('td[3]/text()').extract()[0]
+                except:
+                    reply = ''
                 yield Request(url=HT_href, callback=self.parse_content, meta={'HT_id': HT_id, 'title': title, 'author': author, 'HT_href': HT_href, 'reply': reply})
             except Exception as e:
                 print '获取主题主页错误' + str(e)
@@ -36,31 +51,46 @@ class Douban_HT(RedisSpider):
         try:
             item = DoubanHTItem()
             item['sign'] = 'OUT'
-            item['HT_id'] = response.meta['HT_id']
+            item['HT_id'] = str(response.meta['HT_id'])
             item['title'] = response.meta['title']
             item['author'] = response.meta['author']
             item['HT_href'] = response.meta['HT_href']
-            item['reply'] = response.meta['reply']
-            item['HTtime'] = selector.xpath('//div[@class="post-author"]/div[@class="post-author-info"]/span[@class="post-publish-date"]/text()').extract()[0]
-            p = selector.xpath('//div[@class="post-content"]/div[@id="link-report"]/span/p')
-            content = ''
-            for i in p:
-                content += i.xpath('text()').extract()[0]
-            item['Content'] = content
+            item['reply'] = str(response.meta['reply'])
+            try:
+                item['HTtime'] = selector.xpath('//div[@class="post-author"]/div[@class="post-author-info"]/span[@class="post-publish-date"]/text()').extract()[0]
+                p = selector.xpath('//div[@class="post-content"]/div[@id="link-report"]/span/p')
+                content = ''
+                for i in p:
+                    content += i.xpath('text()').extract()[0]
+                item['Content'] = content
+            except Exception as e:
+                print 'content拼接有问题,给个空' + str(e)
+                item['Content'] = ''
             yield item
         except Exception as e:
             print '读取OUT错误' + str(e)
-
-        divs = selector.xpath('//td[@valign="top" and class="post"]/div/div[@class="comment-item" and @id]')
+        divs = selector.xpath('//td[@class="post"]/div[4]/div[@class="comment-item" and @id]')
         for div in divs:
             try:
                 item = DoubanHTItem()
                 item['sign'] = 'INSIDE'
                 item['HT_id'] = response.meta['HT_id']
-                item['Rname'] = div.xpath('div[@class="content report-comment"]/div[@class="author"]/a/text()').extract()[0]
-                item['Rtime'] = div.xpath('div[@class="content report-comment"]/div[@class="author"]/span/text()').extract()[0]
-                item['Rcontent'] = div.xpath('div[@class="content report-comment"]/p/text()').extract()[0]
-                item['Rliked'] = div.xpath('div[@class="content report-comment"]/div[@class="op-lnks"]/a[@class="comment-vote js-vote"]/text()').extract()[0]
+                try:
+                    item['Rname'] = div.xpath('div[@class="content report-comment"]/div[@class="author"]/a/text()').extract()[0]
+                except:
+                    item['Rname'] = ''
+                try:
+                    item['Rtime'] = div.xpath('div[@class="content report-comment"]/div[@class="author"]/span/text()').extract()[0]
+                except:
+                    item['Rtime'] = ''
+                try:
+                    item['Rcontent'] = div.xpath('div[@class="content report-comment"]/p/text()').extract()[0]
+                except:
+                    item['Rcontent'] = ''
+                try:
+                    item['Rliked'] = str(div.xpath('div[@class="content report-comment"]/div[@class="op-lnks"]/a[@class="comment-vote js-vote"]/text()').extract()[0])
+                except:
+                    item['Rliked'] = ''
                 yield item
             except Exception as e:
                 print '读取INSEIDE错误' + str(e)
